@@ -1,0 +1,42 @@
+@@ -0,0 +1,41 @@
+---
+- hosts: all
+  sudo: true
+  # become: yes
+
+  tasks:
+   - name: Get NTP servers
+     command: cat /etc/ntp.conf
+     register: output
+
+#   - name: Print output
+#     debug: var=output.stdout_lines
+
+   - name: "ntp synchronisation from the server"
+     command: ntpq -p
+     ignore_errors: true
+     register: synced_from
+
+   - name: "Ntp service status"
+#     command: service ntp status
+     command: /etc/init.d/ntp status
+     ignore_errors: true
+     register: ntp_status
+
+
+   - name: "hostname"
+     command: hostname
+     register: hostname
+
+   - debug: var={{ item }}
+#       msg: "{{ item }} with index {{ my_idx }}"
+     loop:
+#       - { name: hostname.stdout_lines }
+       - hostname.stdout_lines
+       - ntp_status.stdout_lines
+       - synced_from.stdout_lines
+       - output.stdout_lines
+     dest: /srv/storage/data/rolloutstuff/output.csv
+     backup: yes
+#    loop_control:
+#       index_var: my_idx
